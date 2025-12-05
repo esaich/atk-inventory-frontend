@@ -1,84 +1,138 @@
-// src/components/Sidebar.jsx
+// src/components/Sidebar.jsx (FINAL DYNAMIC VERSION)
 
 import { Link, useLocation } from 'react-router-dom';
+
+// --- DEFINISI MENU ADMIN (Diambil dari kode Anda) ---
+const ADMIN_MENU = [
+  { 
+    name: 'Dashboard', 
+    path: '/', // Rute Dashboard Admin (Root)
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Barang', 
+    path: '/admin/barang', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Supplier', 
+    path: '/admin/supplier', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Barang Masuk', 
+    path: '/admin/barangmasuk', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Permintaan', 
+    path: '/admin/permintaan', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Pengadaan', 
+    path: '/admin/pengadaan', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Payment', 
+    path: '/admin/payment', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'User Divisi', 
+    path: '/admin/userdivisi', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+    ) 
+  },
+];
+
+// --- DEFINISI MENU DIVISI (Penambahan) ---
+const DIVISI_MENU = [
+  { 
+    name: 'Dashboard Divisi', 
+    path: '/divisi', // Rute Dashboard Divisi
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Buat Permintaan', 
+    path: '/divisi/permintaan/create', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ) 
+  },
+  { 
+    name: 'Status Permintaan', 
+    path: '/divisi/permintaan/status', 
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ) 
+  },
+];
+
 
 export default function Sidebar({ user, onLogout, isOpen }) {
   const location = useLocation();
 
-  const menuItems = [
-    { 
-      name: 'Dashboard', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      ),
-      path: '/' 
-    },
-    { 
-      name: 'Barang', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-      path: '/admin/barang' 
-    },
-    { 
-      name: 'Supplier', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
-      path: '/admin/supplier' 
-    },
-    { 
-      name: 'Barang Masuk', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      ),
-      path: '/admin/barangmasuk' 
-    },
-    { 
-      name: 'Permintaan', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      path: '/admin/permintaan' 
-    },
-    { 
-      name: 'Pengadaan', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      ),
-      path: '/admin/pengadaan' 
-    },
-    { 
-      name: 'Payment', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      ),
-      path: '/admin/payment' 
-    },
-    { 
-      name: 'User Divisi', 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      path: '/admin/userdivisi' 
-    },
-  ];
+  // Logika untuk menentukan peran user. Asumsi 'admin' atau 'divisi'.
+  const userRole = user?.role?.toLowerCase() || (user?.namaDivisi ? 'divisi' : 'guest'); 
+  
+  // Pilih menu yang sesuai berdasarkan peran
+  const menuItems = userRole === 'admin' ? ADMIN_MENU : DIVISI_MENU;
+
+  // Fungsi untuk menentukan apakah item menu aktif, termasuk penanganan rute root.
+  const isMenuActive = (path) => {
+    // Jika Admin, cek apakah path saat ini adalah root (/) atau dimulai dengan path admin
+    if (userRole === 'admin' && path === '/') {
+        return location.pathname === '/' || location.pathname.startsWith('/admin');
+    }
+    // Jika Divisi, cek apakah path saat ini adalah /divisi atau dimulai dengan /divisi
+    if (userRole === 'divisi' && path === '/divisi') {
+        return location.pathname === '/divisi' || location.pathname.startsWith('/divisi/');
+    }
+    
+    // Untuk rute lain, cek kecocokan langsung atau sebagai prefix
+    return location.pathname.startsWith(path);
+  }
 
   const handleLogout = () => {
     if (window.confirm('Yakin ingin logout?')) {
@@ -96,7 +150,11 @@ export default function Sidebar({ user, onLogout, isOpen }) {
     >
       {/* Logo Section */}
       <div className="h-16 flex items-center justify-center border-b border-gray-700 bg-gray-900/50">
-        <Link to="/" className="flex items-center gap-3 px-4 hover:opacity-80 transition">
+        <Link 
+          // Link Logo disesuaikan berdasarkan Role
+          to={userRole === 'admin' ? '/' : '/divisi'} 
+          className="flex items-center gap-3 px-4 hover:opacity-80 transition"
+        >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0 shadow-lg">
             <span className="text-2xl">📦</span>
           </div>
@@ -111,8 +169,8 @@ export default function Sidebar({ user, onLogout, isOpen }) {
 
       {/* Navigation Menu */}
       <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto h-[calc(100vh-16rem)]">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
+        {menuItems.map((item) => { // Menggunakan menuItems dinamis
+          const isActive = isMenuActive(item.path); // Menggunakan isMenuActive
           
           return (
             <Link
