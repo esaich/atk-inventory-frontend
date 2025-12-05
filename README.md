@@ -1,16 +1,76 @@
-# React + Vite
+# 📦 Sistem Inventory ATK – Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend aplikasi **Sistem Informasi Pengadaan & Pengolahan ATK** yang digunakan untuk mengelola data barang, supplier/divisi, barang masuk, permintaan barang, pengadaan, hingga pembayaran.  
+Aplikasi ini dibangun menggunakan **React + Vite**, **TailwindCSS**, dan **Axios**, serta terintegrasi dengan Backend **ASP.NET Core API**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌟 Fitur Utama
 
-## React Compiler
+### 🔐 **Login**
+- Autentikasi user & admin
+- Validasi input
+- Menyimpan token login
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🏢 **Dashboard Admin**
+- Ringkasan stok barang
+- Informasi barang kritis
+- Navigasi cepat ke menu utama
 
-## Expanding the ESLint configuration
+### 📦 **Manajemen Barang**
+- Tambah barang
+- Edit barang
+- Hapus barang
+- Tampilan tabel interaktif
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 🗂️ **Supplier / Divisi**
+- Input supplier/divisi
+- Digunakan untuk referensi pengadaan dan barang masuk
+
+### 📥 **Barang Masuk**
+- Penambahan stok
+- Validasi invoice
+- Form modal untuk input cepat
+
+### 📤 **Permintaan Barang**
+- User mengajukan permintaan
+- Admin menyetujui atau menolak
+- Jika disetujui → stok otomatis berkurang
+
+### 🛒 **Pengadaan**
+- Pencatatan pembelian
+- Menyimpan detail & catatan pengadaan
+
+### 💳 **Payment**
+- Detail pembayaran
+- Informasi transaksi pengadaan
+
+---
+
+## 📸 Tampilan Aplikasi
+
+> Gambar-gambar berikut harus kamu upload ke folder:  
+> **`/assets/`**
+
+### 🖥️ Halaman Login  
+![Login](./assets/login.png)
+
+### 📊 Dashboard  
+![Dashboard](./assets/dashboard.png)
+
+### 📦 Data Barang  
+![Barang](./assets/barang.png)
+
+### 📥 Barang Masuk  
+![Barang Masuk](./assets/barang-masuk.png)
+
+### 📤 Permintaan Barang  
+![Permintaan](./assets/permintaan.png)
+
+### 🧾 Payment  
+![Payment](./assets/payment.png)
+
+---
+
+## 📁 Struktur Folder
+
