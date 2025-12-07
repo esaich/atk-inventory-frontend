@@ -1,4 +1,4 @@
-// src/pages/Admin/UserDivisi/UserDivisi.jsx
+// src/pages/Admin/UserDivisi/UserDivisi.jsx (REVISI AKHIR)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
@@ -7,6 +7,9 @@ import Button from '../../../components/Button';
 import Badge from '../../../components/Badge';
 import Alert from '../../../components/Alert';
 import Loading from '../../../components/Loading';
+
+// ✅ Impor ConfirmModal
+import ConfirmModal from '../../../components/ConfirmModal'; 
 
 import { userDivisiAPI } from '../../../services/api';
 
@@ -20,6 +23,13 @@ export default function UserDivisi() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
+
+  // ✅ State untuk Confirm Modal Hapus (BARU)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    loading: false,
+  });
 
   useEffect(() => {
     fetchUsers();
@@ -45,9 +55,9 @@ export default function UserDivisi() {
       }
 
       setUserList(userData);
-      console.log('User Divisi Data:', userData);
+      // ❌ HILANGKAN console.log
     } catch (err) {
-      console.error('Error fetching users:', err);
+      // ❌ HILANGKAN console.error
       showAlert('error', 'Gagal memuat data user divisi');
       setUserList([]);
     } finally {
@@ -78,16 +88,36 @@ export default function UserDivisi() {
     fetchUsers();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus user divisi ini?')) return;
+  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  const handleOpenDeleteModal = (user) => {
+    setConfirmDeleteModal({
+      isOpen: true,
+      id: user.id,
+      loading: false,
+      title: 'Hapus User Divisi',
+      message: `Anda yakin ingin menghapus user ${user.nama} (${user.username}) dari divisi ${user.namaDivisi}? Aksi ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger',
+    });
+  };
+
+  // ✅ Fungsi eksekusi penghapusan (MENGGANTIKAN LOGIKA handleDelete)
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteModal.id;
+    if (!id) return;
+    
+    setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
       await userDivisiAPI.delete(id);
       showAlert('success', 'User divisi berhasil dihapus!');
       fetchUsers();
     } catch (error) {
-      console.error('Delete error:', error);
+      // ❌ HILANGKAN console.error
       showAlert('error', `Gagal menghapus user divisi: ${error.message}`);
+    } finally {
+      setConfirmDeleteModal({ isOpen: false, id: null, loading: false });
     }
   };
 
@@ -140,7 +170,8 @@ export default function UserDivisi() {
             label="Hapus"
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            // ✅ Ubah ini untuk memicu modal konfirmasi
+            onClick={() => handleOpenDeleteModal(row)}
           />
         </div>
       ),
@@ -277,6 +308,19 @@ export default function UserDivisi() {
           showAlert={showAlert}
         />
       )}
+      
+      {/* ✅ Confirm Modal Hapus (BARU) */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title={confirmDeleteModal.title}
+        message={confirmDeleteModal.message}
+        confirmText={confirmDeleteModal.confirmText}
+        cancelText={confirmDeleteModal.cancelText}
+        type={confirmDeleteModal.type}
+        loading={confirmDeleteModal.loading}
+      />
     </div>
   );
 }

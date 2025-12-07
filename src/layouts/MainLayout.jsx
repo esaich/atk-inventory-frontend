@@ -1,22 +1,66 @@
-// src/layouts/MainLayout.jsx
+// src/layouts/MainLayout.jsx (REVISI)
 
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal'; // Pastikan ConfirmModal di-import
 
 export default function MainLayout({ user, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // ✅ State untuk Confirm Modal (BARU)
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: 'warning',
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Ya, Logout',
+    cancelText: 'Batal',
+    loading: false, // Tambahkan state loading jika diperlukan
+  });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // ✅ Function untuk menampilkan Modal Logout (BARU)
+  const handleLogoutClick = () => {
+    setConfirmModal({
+      isOpen: true,
+      type: 'danger', // Ganti ke danger untuk logout
+      title: 'Konfirmasi Logout',
+      message: 'Apakah Anda yakin ingin keluar dari sistem? Anda harus login kembali.',
+      onConfirm: handleLogoutConfirm,
+      confirmText: 'Ya, Logout',
+      cancelText: 'Batal',
+      loading: false,
+    });
+  };
+
+  // ✅ Function yang dipanggil setelah User Konfirmasi di Modal (BARU)
+  const handleLogoutConfirm = () => {
+    // Di sini Anda bisa menambahkan logika loading jika proses logout butuh waktu
+    setConfirmModal(prev => ({ ...prev, loading: true })); 
+    
+    // Panggil function logout yang sebenarnya dari parent (App.jsx)
+    onLogout(); 
+    
+    // Reset modal setelah proses selesai (biasanya tidak diperlukan karena onLogout akan mengalihkan halaman)
+    // setConfirmModal({ ...confirmModal, isOpen: false }); 
+  };
+  
+  // Function untuk menutup modal
+  const closeConfirmModal = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false, loading: false }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
+      {/* Sidebar - Menerima handleLogoutClick */}
       <Sidebar 
         user={user}
-        onLogout={onLogout}
+        onLogout={handleLogoutClick} // ✅ Arahkan onLogout ke function yang memicu modal
         isOpen={sidebarOpen}
         onToggle={toggleSidebar}
       />
@@ -83,6 +127,19 @@ export default function MainLayout({ user, onLogout }) {
           </div>
         </footer>
       </div>
+
+      {/* ✅ Implementasi Confirm Modal (BARU) */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        loading={confirmModal.loading}
+      />
     </div>
   );
 }

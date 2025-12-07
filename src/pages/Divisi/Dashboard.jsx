@@ -1,12 +1,12 @@
 // src/pages/Divisi/Dashboard.jsx
 
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Card from '../../components/Card';
 import Badge from '../../components/Badge';
 import Loading from '../../components/Loading';
 import Button from '../../components/Button';
 import { permintaanBarangAPI, barangAPI } from '../../services/api';
-import { Link } from 'react-router-dom';
 
 export default function DivisiDashboard({ user }) {
   const [permintaanList, setPermintaanList] = useState([]);
@@ -21,7 +21,6 @@ export default function DivisiDashboard({ user }) {
     try {
       setLoading(true);
       
-      // Fetch permintaan barang
       const permintaanResponse = await permintaanBarangAPI.getAll();
       let permintaanData = [];
       if (Array.isArray(permintaanResponse)) {
@@ -32,7 +31,6 @@ export default function DivisiDashboard({ user }) {
         permintaanData = permintaanResponse.$values;
       }
       
-      // Fetch barang (untuk info stok)
       const barangResponse = await barangAPI.getAll();
       let barangData = [];
       if (Array.isArray(barangResponse)) {
@@ -53,7 +51,6 @@ export default function DivisiDashboard({ user }) {
     }
   };
 
-  // Hitung statistik
   const stats = {
     totalPermintaan: permintaanList.length,
     pending: permintaanList.filter(p => p.status === 0).length,
@@ -61,7 +58,6 @@ export default function DivisiDashboard({ user }) {
     ditolak: permintaanList.filter(p => p.status === 2).length,
   };
 
-  // Get status badge
   const getStatusBadge = (status) => {
     switch(status) {
       case 0:
@@ -75,7 +71,6 @@ export default function DivisiDashboard({ user }) {
     }
   };
 
-  // Format tanggal
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -86,7 +81,6 @@ export default function DivisiDashboard({ user }) {
     });
   };
 
-  // Get barang name by ID
   const getBarangName = (barangId) => {
     const barang = barangList.find(b => b.id === barangId);
     return barang ? barang.namaBarang : 'Unknown';
@@ -108,8 +102,6 @@ export default function DivisiDashboard({ user }) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* Total Permintaan */}
         <Card className="hover:shadow-xl transition">
           <div className="flex items-center justify-between">
             <div>
@@ -124,7 +116,6 @@ export default function DivisiDashboard({ user }) {
           </div>
         </Card>
 
-        {/* Pending */}
         <Card className="hover:shadow-xl transition">
           <div className="flex items-center justify-between">
             <div>
@@ -139,7 +130,6 @@ export default function DivisiDashboard({ user }) {
           </div>
         </Card>
 
-        {/* Disetujui */}
         <Card className="hover:shadow-xl transition">
           <div className="flex items-center justify-between">
             <div>
@@ -154,7 +144,6 @@ export default function DivisiDashboard({ user }) {
           </div>
         </Card>
 
-        {/* Ditolak */}
         <Card className="hover:shadow-xl transition">
           <div className="flex items-center justify-between">
             <div>
@@ -170,10 +159,12 @@ export default function DivisiDashboard({ user }) {
         </Card>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - FIXED ROUTING */}
       <Card title="⚡ Aksi Cepat">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link to="/divisi/permintaan">
+          
+          {/* Buat Permintaan */}
+          <Link to="/divisi/permintaan/create">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border-2 border-blue-200 hover:shadow-lg transition cursor-pointer">
               <div className="flex items-center gap-4">
                 <div className="bg-blue-500 w-12 h-12 rounded-full flex items-center justify-center">
@@ -187,29 +178,35 @@ export default function DivisiDashboard({ user }) {
             </div>
           </Link>
 
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border-2 border-green-200 hover:shadow-lg transition cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="bg-green-500 w-12 h-12 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📊</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-green-900">Lihat Stok</h3>
-                <p className="text-sm text-green-700">Cek ketersediaan barang</p>
+          {/* Lihat Stok */}
+          <Link to="/divisi/stok">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border-2 border-green-200 hover:shadow-lg transition cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="bg-green-500 w-12 h-12 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-green-900">Lihat Stok</h3>
+                  <p className="text-sm text-green-700">Cek ketersediaan barang</p>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border-2 border-purple-200 hover:shadow-lg transition cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="bg-purple-500 w-12 h-12 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📜</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-purple-900">Riwayat</h3>
-                <p className="text-sm text-purple-700">Lihat permintaan sebelumnya</p>
+          {/* Riwayat */}
+          <Link to="/divisi/permintaan/status">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border-2 border-purple-200 hover:shadow-lg transition cursor-pointer">
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-500 w-12 h-12 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📜</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-purple-900">Riwayat</h3>
+                  <p className="text-sm text-purple-700">Lihat permintaan sebelumnya</p>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         </div>
       </Card>
 
@@ -239,7 +236,7 @@ export default function DivisiDashboard({ user }) {
               <div className="text-center py-8 text-gray-500">
                 <span className="text-5xl mb-3 block">📭</span>
                 <p>Belum ada permintaan</p>
-                <Link to="/divisi/permintaan">
+                <Link to="/divisi/permintaan/create">
                   <Button
                     label="Buat Permintaan Pertama"
                     variant="primary"

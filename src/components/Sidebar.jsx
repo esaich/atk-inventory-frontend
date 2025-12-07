@@ -1,12 +1,12 @@
-// src/components/Sidebar.jsx (FINAL DYNAMIC VERSION)
+// src/components/Sidebar.jsx (REVISI FINAL DYNAMIC VERSION - Hapus window.confirm)
 
 import { Link, useLocation } from 'react-router-dom';
 
-// --- DEFINISI MENU ADMIN (Diambil dari kode Anda) ---
+// --- DEFINISI MENU ADMIN ---
 const ADMIN_MENU = [
   { 
     name: 'Dashboard', 
-    path: '/', // Rute Dashboard Admin (Root)
+    path: '/', 
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -78,11 +78,11 @@ const ADMIN_MENU = [
   },
 ];
 
-// --- DEFINISI MENU DIVISI (Penambahan) ---
+// --- DEFINISI MENU DIVISI ---
 const DIVISI_MENU = [
   { 
     name: 'Dashboard Divisi', 
-    path: '/divisi', // Rute Dashboard Divisi
+    path: '/divisi', 
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -110,34 +110,27 @@ const DIVISI_MENU = [
 ];
 
 
-export default function Sidebar({ user, onLogout, isOpen }) {
+export default function Sidebar({ user, onLogout, isOpen }) { // onToggle dihapus karena tidak digunakan
   const location = useLocation();
 
-  // Logika untuk menentukan peran user. Asumsi 'admin' atau 'divisi'.
   const userRole = user?.role?.toLowerCase() || (user?.namaDivisi ? 'divisi' : 'guest'); 
-  
-  // Pilih menu yang sesuai berdasarkan peran
   const menuItems = userRole === 'admin' ? ADMIN_MENU : DIVISI_MENU;
 
-  // Fungsi untuk menentukan apakah item menu aktif, termasuk penanganan rute root.
   const isMenuActive = (path) => {
-    // Jika Admin, cek apakah path saat ini adalah root (/) atau dimulai dengan path admin
     if (userRole === 'admin' && path === '/') {
         return location.pathname === '/' || location.pathname.startsWith('/admin');
     }
-    // Jika Divisi, cek apakah path saat ini adalah /divisi atau dimulai dengan /divisi
     if (userRole === 'divisi' && path === '/divisi') {
         return location.pathname === '/divisi' || location.pathname.startsWith('/divisi/');
     }
     
-    // Untuk rute lain, cek kecocokan langsung atau sebagai prefix
     return location.pathname.startsWith(path);
   }
 
+  // ✅ HAPUS LOGIKA window.confirm. Langsung panggil onLogout
+  // onLogout sekarang adalah handleLogoutClick dari MainLayout yang memicu Modal.
   const handleLogout = () => {
-    if (window.confirm('Yakin ingin logout?')) {
-      onLogout();
-    }
+    onLogout(); 
   };
 
   return (
@@ -151,7 +144,6 @@ export default function Sidebar({ user, onLogout, isOpen }) {
       {/* Logo Section */}
       <div className="h-16 flex items-center justify-center border-b border-gray-700 bg-gray-900/50">
         <Link 
-          // Link Logo disesuaikan berdasarkan Role
           to={userRole === 'admin' ? '/' : '/divisi'} 
           className="flex items-center gap-3 px-4 hover:opacity-80 transition"
         >
@@ -169,8 +161,8 @@ export default function Sidebar({ user, onLogout, isOpen }) {
 
       {/* Navigation Menu */}
       <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto h-[calc(100vh-16rem)]">
-        {menuItems.map((item) => { // Menggunakan menuItems dinamis
-          const isActive = isMenuActive(item.path); // Menggunakan isMenuActive
+        {menuItems.map((item) => { 
+          const isActive = isMenuActive(item.path); 
           
           return (
             <Link
@@ -225,7 +217,7 @@ export default function Sidebar({ user, onLogout, isOpen }) {
 
         {/* Logout Button */}
         <button
-          onClick={handleLogout}
+          onClick={handleLogout} // ✅ Sekarang memanggil function dari MainLayout yang memicu Modal
           className={`
             w-full flex items-center gap-3 px-4 py-3 rounded-xl
             bg-red-600 hover:bg-red-700 transition-all group

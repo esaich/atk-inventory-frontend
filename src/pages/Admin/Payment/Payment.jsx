@@ -1,4 +1,4 @@
-// src/pages/Admin/Payment/Payment.jsx
+// src/pages/Admin/Payment/Payment.jsx (REVISI AKHIR)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
@@ -7,6 +7,9 @@ import Button from '../../../components/Button';
 import Badge from '../../../components/Badge';
 import Alert from '../../../components/Alert';
 import Loading from '../../../components/Loading';
+
+// ✅ TAMBAHKAN ConfirmModal
+import ConfirmModal from '../../../components/ConfirmModal'; 
 
 import { paymentAPI, supplierAPI } from '../../../services/api';
 
@@ -21,6 +24,13 @@ export default function Payment() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
+
+  // ✅ State untuk Confirm Modal Hapus (BARU)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    loading: false,
+  });
 
   useEffect(() => {
     fetchAllData();
@@ -63,10 +73,9 @@ export default function Payment() {
       setSupplierList(supplierData);
       setPaymentList(paymentData);
 
-      console.log('Payment Data:', paymentData);
-      console.log('Supplier Data:', supplierData);
+      // ❌ HILANGKAN console.log
     } catch (err) {
-      console.error('Error fetching data:', err);
+      // ❌ HILANGKAN console.error
       showAlert('error', 'Gagal memuat data');
       setPaymentList([]);
     } finally {
@@ -96,17 +105,43 @@ export default function Payment() {
     showAlert('success', message);
     fetchAllData();
   };
+  
+  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  const handleOpenDeleteModal = (id) => {
+    const payment = paymentList.find(p => p.id === id);
+    // Tambahkan cek agar tidak error jika payment tidak ditemukan
+    if (!payment) return; 
+    
+    const supplierName = getSupplierNama(payment.supplierId);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus data payment ini?')) return;
+    setConfirmDeleteModal({
+      isOpen: true,
+      id: id,
+      loading: false,
+      title: 'Hapus Data Payment',
+      message: `Anda yakin ingin menghapus data payment ID: ${id} untuk Supplier: ${supplierName}? Aksi ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger',
+    });
+  };
+  
+  // ✅ Fungsi eksekusi penghapusan (MENGGANTIKAN LOGIKA handleDelete)
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteModal.id;
+    if (!id) return;
+    
+    setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
       await paymentAPI.delete(id);
       showAlert('success', 'Payment berhasil dihapus!');
       fetchAllData();
     } catch (error) {
-      console.error('Delete error:', error);
+      // ❌ HILANGKAN console.error
       showAlert('error', `Gagal menghapus payment: ${error.message}`);
+    } finally {
+      setConfirmDeleteModal({ isOpen: false, id: null, loading: false });
     }
   };
 
@@ -116,7 +151,7 @@ export default function Payment() {
       showAlert('success', 'Status payment berhasil diupdate!');
       fetchAllData();
     } catch (error) {
-      console.error('Update status error:', error);
+      // ❌ HILANGKAN console.error
       showAlert('error', `Gagal update status: ${error.message}`);
     }
   };
@@ -212,7 +247,8 @@ export default function Payment() {
             label="Hapus"
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            // ✅ Ubah ini untuk memicu modal konfirmasi
+            onClick={() => handleOpenDeleteModal(row.id)}
           />
         </div>
       ),
@@ -320,6 +356,19 @@ export default function Payment() {
           onUpdateStatus={handleUpdateStatus}
         />
       )}
+
+      {/* ✅ Confirm Modal Hapus (BARU) */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title={confirmDeleteModal.title}
+        message={confirmDeleteModal.message}
+        confirmText={confirmDeleteModal.confirmText}
+        cancelText={confirmDeleteModal.cancelText}
+        type={confirmDeleteModal.type}
+        loading={confirmDeleteModal.loading}
+      />
     </div>
   );
 }

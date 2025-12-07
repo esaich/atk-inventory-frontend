@@ -1,24 +1,35 @@
-// src/pages/Admin/Supplier/Supplier.jsx
+// src/pages/Admin/Supplier/Supplier.jsx (REVISI AKHIR)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
 import Table from '../../../components/Table';
 import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
-import Loading from '../../../components/Loading'; // Pastikan Loading diimpor
+import Loading from '../../../components/Loading'; 
+
+// ✅ Impor ConfirmModal
+import ConfirmModal from '../../../components/ConfirmModal'; 
+
 import { supplierAPI } from '../../../services/api';
 
-// Impor komponen Modal yang baru
 import SupplierCreateModal from './SupplierCreateModal';
 import SupplierEditModal from './SupplierEditModal';
 
 export default function Supplier() {
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // State untuk Modal Create
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);     // State untuk Modal Edit
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
+
+  // ✅ State untuk Confirm Modal Hapus (BARU)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    loading: false,
+    namaSupplier: '',
+  });
 
   useEffect(() => {
     fetchSuppliers();
@@ -44,7 +55,7 @@ export default function Supplier() {
         setSuppliers([]);
       }
     } catch (error) {
-      console.error('Error fetching suppliers:', error);
+      // ❌ HILANGKAN console.error
       showAlert('error', 'Gagal memuat data supplier');
       setSuppliers([]);
     } finally {
@@ -72,21 +83,42 @@ export default function Supplier() {
   };
 
   // --- Handle CRUD Actions ---
-  // Fungsi ini akan dipanggil dari Modal Create/Edit setelah sukses
   const handleSuccess = (message) => {
     showAlert('success', message);
     fetchSuppliers(); // Muat ulang data
   };
+  
+  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  const handleOpenDeleteModal = (supplier) => {
+    setConfirmDeleteModal({
+      isOpen: true,
+      id: supplier.id,
+      loading: false,
+      namaSupplier: supplier.namaSupplier,
+      title: 'Hapus Data Supplier',
+      message: `Anda yakin ingin menghapus supplier ${supplier.namaSupplier}? Semua data terkait supplier ini mungkin ikut terpengaruh. Aksi ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger',
+    });
+  };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus supplier ini?')) return;
+  // ✅ Fungsi eksekusi penghapusan (MENGGANTIKAN LOGIKA handleDelete)
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteModal.id;
+    if (!id) return;
     
+    setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
+
     try {
       await supplierAPI.delete(id);
       showAlert('success', 'Supplier berhasil dihapus!');
       fetchSuppliers();
     } catch (error) {
+      // ❌ HILANGKAN console.error
       showAlert('error', `Gagal menghapus supplier: ${error.message}`);
+    } finally {
+      setConfirmDeleteModal({ isOpen: false, id: null, loading: false, namaSupplier: '' });
     }
   };
 
@@ -111,7 +143,8 @@ export default function Supplier() {
             label="Hapus"
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            // ✅ Ubah ini untuk memicu modal konfirmasi
+            onClick={() => handleOpenDeleteModal(row)}
           />
         </div>
       ),
@@ -168,6 +201,19 @@ export default function Supplier() {
           showAlert={showAlert}
         />
       )}
+
+      {/* ✅ Confirm Modal Hapus (BARU) */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title={confirmDeleteModal.title}
+        message={confirmDeleteModal.message}
+        confirmText={confirmDeleteModal.confirmText}
+        cancelText={confirmDeleteModal.cancelText}
+        type={confirmDeleteModal.type}
+        loading={confirmDeleteModal.loading}
+      />
     </div>
   );
 }

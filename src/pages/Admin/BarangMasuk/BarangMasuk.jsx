@@ -1,4 +1,4 @@
-// src/pages/Admin/BarangMasuk/BarangMasuk.jsx
+// src/pages/Admin/BarangMasuk/BarangMasuk.jsx (REVISI)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
@@ -6,6 +6,9 @@ import Table from '../../../components/Table';
 import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
 import Loading from '../../../components/Loading';
+
+// ✅ Tambahkan ConfirmModal di sini
+import ConfirmModal from '../../../components/ConfirmModal'; 
 
 import { barangMasukAPI, barangAPI, supplierAPI } from '../../../services/api';
 
@@ -21,6 +24,13 @@ export default function BarangMasuk() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBarangMasuk, setSelectedBarangMasuk] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
+  
+  // ✅ State untuk Confirm Modal Hapus (BARU)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    loading: false,
+  });
 
   useEffect(() => {
     fetchAllData();
@@ -31,12 +41,10 @@ export default function BarangMasuk() {
     setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
   };
 
-  // ✅ PERBAIKAN: Fetch semua data sekaligus
   const fetchAllData = async () => {
     try {
       setLoading(true);
 
-      // Fetch parallel (bersamaan)
       const [barangMasukResponse, barangResponse, supplierResponse] = await Promise.all([
         barangMasukAPI.getAll(),
         barangAPI.getAll(),
@@ -77,11 +85,11 @@ export default function BarangMasuk() {
       setSupplierList(supplierData);
       setBarangMasukList(barangMasukData);
 
-      console.log('Barang Masuk Data:', barangMasukData);
-      console.log('Barang Data:', barangData);
-      console.log('Supplier Data:', supplierData);
+      // ❌ HILANGKAN console.log('Barang Masuk Data:', barangMasukData);
+      // ❌ HILANGKAN console.log('Barang Data:', barangData);
+      // ❌ HILANGKAN console.log('Supplier Data:', supplierData);
     } catch (err) {
-      console.error('Error fetching data:', err);
+      // ❌ HILANGKAN console.error('Error fetching data:', err);
       showAlert('error', 'Gagal memuat data');
       setBarangMasukList([]);
     } finally {
@@ -112,16 +120,38 @@ export default function BarangMasuk() {
     fetchAllData();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus data barang masuk ini?')) return;
+  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  const handleOpenDeleteModal = (id) => {
+    const barangInfo = getBarangInfo(barangMasukList.find(b => b.id === id)?.barangId);
+    
+    setConfirmDeleteModal({
+      isOpen: true,
+      id: id,
+      loading: false,
+      title: 'Hapus Data Barang Masuk',
+      message: `Anda yakin ingin menghapus data barang masuk untuk: ${barangInfo.nama}? Aksi ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger',
+    });
+  };
+
+  // ✅ Fungsi eksekusi penghapusan (DIREVISI)
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteModal.id;
+    if (!id) return;
+    
+    setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
       await barangMasukAPI.delete(id);
       showAlert('success', 'Barang masuk berhasil dihapus!');
       fetchAllData();
     } catch (error) {
-      console.error('Delete error:', error);
+      // ❌ HILANGKAN console.error('Delete error:', error);
       showAlert('error', `Gagal menghapus barang masuk: ${error.message}`);
+    } finally {
+      setConfirmDeleteModal({ isOpen: false, id: null, loading: false });
     }
   };
 
@@ -143,7 +173,6 @@ export default function BarangMasuk() {
     }).format(amount || 0);
   };
 
-  // ✅ PERBAIKAN: Helper untuk join data barang
   const getBarangInfo = (barangId) => {
     const barang = barangList.find(b => b.id === barangId);
     if (barang) {
@@ -155,7 +184,6 @@ export default function BarangMasuk() {
     return { nama: '-', kode: '-' };
   };
 
-  // ✅ PERBAIKAN: Helper untuk join data supplier
   const getSupplierNama = (supplierId) => {
     if (!supplierId) return '-';
     const supplier = supplierList.find(s => s.id === supplierId);
@@ -223,7 +251,8 @@ export default function BarangMasuk() {
             label="Hapus"
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            // ✅ Ubah ini untuk memicu modal konfirmasi
+            onClick={() => handleOpenDeleteModal(row.id)} 
           />
         </div>
       ),
@@ -268,7 +297,7 @@ export default function BarangMasuk() {
                   const date = new Date(item.tanggalMasuk);
                   const now = new Date();
                   return date.getMonth() === now.getMonth() && 
-                         date.getFullYear() === now.getFullYear();
+                            date.getFullYear() === now.getFullYear();
                 }).length}
               </p>
             </div>
@@ -326,6 +355,19 @@ export default function BarangMasuk() {
           showAlert={showAlert}
         />
       )}
+      
+      {/* ✅ Confirm Modal Hapus (BARU) */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title={confirmDeleteModal.title}
+        message={confirmDeleteModal.message}
+        confirmText={confirmDeleteModal.confirmText}
+        cancelText={confirmDeleteModal.cancelText}
+        type={confirmDeleteModal.type}
+        loading={confirmDeleteModal.loading}
+      />
     </div>
   );
 }

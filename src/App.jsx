@@ -14,16 +14,15 @@ import Barang from "./pages/Admin/Barang/Barang";
 import Supplier from "./pages/Admin/Supplier/Supplier";
 import PengadaanPage from "./pages/Admin/Pengadaan/Pengadaan";
 import BarangMasukPage from "./pages/Admin/BarangMasuk/BarangMasuk";
+import PaymentPage from "./pages/Admin/Payment/Payment";
 import PermintaanPage from "./pages/Admin/Permintaan/Permintaan";
 import UserDivisiPage from "./pages/Admin/UserDivisi/UserDivisi";
-import PaymentPage from "./pages/Admin/Payment/Payment";
 
 // Divisi Pages
 import DivisiDashboard from "./pages/Divisi/Dashboard";
 import CreatePermintaan from "./pages/Divisi/Permintaan/CreatePermintaan";
 import StatusPermintaan from "./pages/Divisi/Permintaan/StatusPermintaan";
-import UserDivisi from "./pages/Admin/UserDivisi/UserDivisi";
-import Payment from "./pages/Admin/Payment/Payment";
+import LihatStok from "./pages/Divisi/LihatStok";
 
 // Komponen Placeholder
 const PlaceholderPage = ({ pageName }) => (
@@ -93,9 +92,8 @@ export default function App() {
         <Route path="barangmasuk" element={<BarangMasukPage />} />
         <Route path="permintaan" element={<PermintaanPage />} />
         <Route path="pengadaan" element={<PengadaanPage />} />
-        <Route path="payment" element={<PaymentPage />} />
-        <Route path="userdivisi" element={<UserDivisiPage/>} />
-
+        <Route path="payment" element={<PaymentPage/>} />
+        <Route path="userdivisi" element={<UserDivisiPage />} />
       </Route>
 
       {/* Divisi Routes */}
@@ -110,6 +108,7 @@ export default function App() {
         <Route index element={<DivisiDashboard user={user} />} />
         <Route path="permintaan/create" element={<CreatePermintaan user={user} />} />
         <Route path="permintaan/status" element={<StatusPermintaan user={user} />} />
+        <Route path="stok" element={<LihatStok />} />
       </Route>
 
       {/* 404 Route */}

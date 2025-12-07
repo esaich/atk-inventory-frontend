@@ -1,4 +1,4 @@
-// src/pages/Admin/Pengadaan/Pengadaan.jsx
+// src/pages/Admin/Pengadaan/Pengadaan.jsx (REVISI)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
@@ -6,6 +6,9 @@ import Table from '../../../components/Table';
 import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
 import Loading from '../../../components/Loading';
+
+// ✅ Tambahkan ConfirmModal di sini
+import ConfirmModal from '../../../components/ConfirmModal'; 
 
 import { pengadaanAPI, supplierAPI } from '../../../services/api';
 
@@ -21,6 +24,13 @@ export default function Pengadaan() {
   const [selectedPengadaan, setSelectedPengadaan] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
+  // ✅ State untuk Confirm Modal Hapus (BARU)
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState({
+    isOpen: false,
+    id: null,
+    loading: false,
+  });
+
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -30,7 +40,6 @@ export default function Pengadaan() {
     setTimeout(() => setAlert({ show: false, type: '', message: '' }), 3000);
   };
 
-  // ✅ PERBAIKAN: Fetch pengadaan dan supplier bersamaan
   const fetchAllData = async () => {
     try {
       setLoading(true);
@@ -64,10 +73,10 @@ export default function Pengadaan() {
       setSupplierList(supplierData);
       setPengadaanList(pengadaanData);
 
-      console.log('Pengadaan Data:', pengadaanData);
-      console.log('Supplier Data:', supplierData);
+      // ❌ HILANGKAN console.log('Pengadaan Data:', pengadaanData);
+      // ❌ HILANGKAN console.log('Supplier Data:', supplierData);
     } catch (err) {
-      console.error('Error fetching data:', err);
+      // ❌ HILANGKAN console.error('Error fetching data:', err);
       showAlert('error', 'Gagal memuat data pengadaan');
       setPengadaanList([]);
     } finally {
@@ -98,16 +107,38 @@ export default function Pengadaan() {
     fetchAllData();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus pengadaan ini?')) return;
+  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  const handleOpenDeleteModal = (pengadaan) => {
+    const supplierName = getSupplierNama(pengadaan.supplierId);
+
+    setConfirmDeleteModal({
+      isOpen: true,
+      id: pengadaan.id,
+      loading: false,
+      title: 'Hapus Data Pengadaan',
+      message: `Anda yakin ingin menghapus pengadaan barang ${pengadaan.namaBarang} (Diajukan kepada ${supplierName})? Aksi ini tidak dapat dibatalkan.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger',
+    });
+  };
+
+  // ✅ Fungsi eksekusi penghapusan (DIREVISI)
+  const handleConfirmDelete = async () => {
+    const id = confirmDeleteModal.id;
+    if (!id) return;
+    
+    setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
       await pengadaanAPI.delete(id);
       showAlert('success', 'Pengadaan berhasil dihapus!');
       fetchAllData();
     } catch (error) {
-      console.error('Delete error:', error);
+      // ❌ HILANGKAN console.error('Delete error:', error);
       showAlert('error', `Gagal menghapus pengadaan: ${error.message}`);
+    } finally {
+      setConfirmDeleteModal({ isOpen: false, id: null, loading: false });
     }
   };
 
@@ -121,7 +152,7 @@ export default function Pengadaan() {
     });
   };
 
-  // ✅ PERBAIKAN: Helper untuk join data supplier
+  // ✅ Helper untuk join data supplier
   const getSupplierNama = (supplierId) => {
     if (!supplierId) return '-';
     const supplier = supplierList.find(s => s.id === supplierId);
@@ -171,7 +202,8 @@ export default function Pengadaan() {
             label="Hapus"
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            // ✅ Ubah ini untuk memicu modal konfirmasi
+            onClick={() => handleOpenDeleteModal(row)} 
           />
         </div>
       ),
@@ -229,6 +261,19 @@ export default function Pengadaan() {
           showAlert={showAlert}
         />
       )}
+
+      {/* ✅ Confirm Modal Hapus (BARU) */}
+      <ConfirmModal
+        isOpen={confirmDeleteModal.isOpen}
+        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title={confirmDeleteModal.title}
+        message={confirmDeleteModal.message}
+        confirmText={confirmDeleteModal.confirmText}
+        cancelText={confirmDeleteModal.cancelText}
+        type={confirmDeleteModal.type}
+        loading={confirmDeleteModal.loading}
+      />
     </div>
   );
 }
