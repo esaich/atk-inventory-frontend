@@ -73,10 +73,8 @@ export default function Pengadaan() {
       setSupplierList(supplierData);
       setPengadaanList(pengadaanData);
 
-      // ❌ HILANGKAN console.log('Pengadaan Data:', pengadaanData);
-      // ❌ HILANGKAN console.log('Supplier Data:', supplierData);
-    } catch (err) {
-      // ❌ HILANGKAN console.error('Error fetching data:', err);
+    } catch {
+     
       showAlert('error', 'Gagal memuat data pengadaan');
       setPengadaanList([]);
     } finally {
@@ -160,7 +158,9 @@ export default function Pengadaan() {
   };
 
   const columns = [
-    { header: 'ID', field: 'id', width: '60px' },
+    { header: 'ID',  width: '60px', render: (row , index) => (
+      <span className="font-semibold">{index + 1} .</span>
+    ) },
     { header: 'Nama Barang', field: 'namaBarang' },
     { 
       header: 'Jumlah', 

@@ -145,16 +145,7 @@ export default function Login({ onLogin }) {
               </p>
             </div>
 
-            {/* Demo Accounts Info */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-xs text-blue-800 font-semibold mb-2">
-                ℹ️ Akun Demo (untuk testing):
-              </p>
-              <div className="text-xs text-blue-700 space-y-1">
-                <p>👨‍💼 Admin: admin / admin123</p>
-                <p>👤 Divisi: divisi1 / divisi123</p>
-              </div>
-            </div>
+           
           </div>
         </Card>
 

@@ -1,4 +1,4 @@
-// src/pages/Admin/Barang/Barang.jsx (REVISI AKHIR)
+// src/pages/Admin/Barang/Barang.jsx (FIXED VERSION)
 
 import { useState, useEffect } from 'react';
 import Card from '../../../components/Card';
@@ -7,8 +7,6 @@ import Button from '../../../components/Button';
 import Alert from '../../../components/Alert';
 import Badge from '../../../components/Badge';
 import Loading from '../../../components/Loading'; 
-
-// ✅ TAMBAHKAN ConfirmModal
 import ConfirmModal from '../../../components/ConfirmModal'; 
 
 import { barangAPI } from '../../../services/api';
@@ -19,21 +17,22 @@ import BarangEditModal from './BarangEditModal';
 export default function Barang() {
   const [barangList, setBarangList] = useState([]);
   const [loading, setLoading] = useState(true);
-      
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-      
   const [selectedBarang, setSelectedBarang] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
-  const [error, setError] = useState(null); 
-  
-  // ✅ State untuk Confirm Modal Hapus (BARU)
+  // ✅ State untuk Confirm Modal Hapus
   const [confirmDeleteModal, setConfirmDeleteModal] = useState({
     isOpen: false,
     id: null,
     loading: false,
     namaBarang: '',
+    title: '',
+    message: '',
+    confirmText: '',
+    cancelText: '',
+    type: 'danger',
   });
       
   useEffect(() => {
@@ -48,24 +47,30 @@ export default function Barang() {
   const fetchBarang = async () => {
     try {
       setLoading(true);
-      setError(null); 
       const response = await barangAPI.getAll();
       
-      // ❌ HILANGKAN console.log
+      console.log('Raw API Response:', response); // ✅ Debug log
+      
+      // ✅ PERBAIKAN: Handle berbagai format response
+      let barangData = [];
       
       if (Array.isArray(response)) {
-        setBarangList(response);
+        barangData = response;
       } else if (response && Array.isArray(response.data)) {
-        setBarangList(response.data);
+        barangData = response.data;
       } else if (response && response.$values) {
-        setBarangList(response.$values);
+        barangData = response.$values;
       } else {
-        setBarangList([]);
+        console.warn('Unexpected response format:', response);
+        barangData = [];
       }
+      
+      console.log('Processed Barang Data:', barangData); // ✅ Debug log
+      setBarangList(barangData);
+      
     } catch (err) { 
-      // ❌ HILANGKAN console.error
-      setError(err.message); 
-      showAlert('error', 'Gagal memuat data barang');
+      console.error('Fetch Barang Error:', err); // ✅ Debug log
+      showAlert('error', 'Gagal memuat data barang: ' + err.message);
       setBarangList([]); 
     } finally {
       setLoading(false);
@@ -96,40 +101,47 @@ export default function Barang() {
     fetchBarang(); 
   };
   
-  // ✅ Fungsi pemicu modal konfirmasi hapus (BARU)
+  // ✅ Fungsi pemicu modal konfirmasi hapus
   const handleOpenDeleteModal = (barang) => {
     setConfirmDeleteModal({
       isOpen: true,
       id: barang.id,
       loading: false,
       namaBarang: barang.namaBarang,
-      title: 'Hapus Data Barang',
-      message: `Anda yakin ingin menghapus barang: ${barang.namaBarang} (Kode: ${barang.kodeBarang})? Aksi ini tidak dapat dibatalkan.`,
+      title: 'Hapus Data Barang?',
+      message: `Anda yakin ingin menghapus barang: "${barang.namaBarang}" (Kode: ${barang.kodeBarang})? Aksi ini tidak dapat dibatalkan.`,
       confirmText: 'Ya, Hapus',
       cancelText: 'Batal',
       type: 'danger',
     });
   };
 
-  // ✅ Fungsi eksekusi penghapusan (DIREVISI dari handleDelete)
+  // ✅ Fungsi eksekusi penghapusan
   const handleConfirmDelete = async () => {
     const id = confirmDeleteModal.id;
     if (!id) return;
-    
-    // ❌ HILANGKAN console.log('Attempting to delete ID:', id); 
 
     setConfirmDeleteModal(prev => ({ ...prev, loading: true }));
 
     try {
       await barangAPI.delete(id);
       showAlert('success', 'Barang berhasil dihapus!');
+      setConfirmDeleteModal({ 
+        isOpen: false, 
+        id: null, 
+        loading: false, 
+        namaBarang: '',
+        title: '',
+        message: '',
+        confirmText: '',
+        cancelText: '',
+        type: 'danger',
+      });
       fetchBarang();
     } catch (error) {
-      // ❌ HILANGKAN console.error
+      console.error('Delete error:', error);
       showAlert('error', `Gagal menghapus barang: ${error.message}`);
-    } finally {
-      // Tutup modal, meskipun ada error (error ditangani oleh Alert)
-      setConfirmDeleteModal({ isOpen: false, id: null, loading: false, namaBarang: '' });
+      setConfirmDeleteModal(prev => ({ ...prev, loading: false, isOpen: false }));
     }
   };
 
@@ -140,8 +152,11 @@ export default function Barang() {
   };
 
   const columns = [
-    { header: 'ID', field: 'id', width: '80px' }, 
-    { header: 'Kode', field: 'kodeBarang', width: '100px' },
+    { header: 'No.', width: '80px', render: (row, index) => (
+          <span className="font-semibold">{index + 1}. </span>
+        ) 
+    }, 
+    { header: 'Kode', field: 'kodeBarang', width: '120px' },
     { header: 'Nama Barang', field: 'namaBarang' },
     { 
       header: 'Stok', 
@@ -171,7 +186,6 @@ export default function Barang() {
             label="Hapus"
             variant="danger"
             size="sm"
-            // ✅ Ubah ini untuk memicu modal konfirmasi
             onClick={() => handleOpenDeleteModal(row)}
           />
         </div>
@@ -181,7 +195,44 @@ export default function Barang() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Barang</p>
+              <p className="text-3xl font-bold text-blue-700">{barangList.length}</p>
+            </div>
+            <div className="text-5xl">📦</div>
+          </div>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Stok Tersedia</p>
+              <p className="text-3xl font-bold text-green-700">
+                {barangList.filter(b => b.stok >= 10).length}
+              </p>
+            </div>
+            <div className="text-5xl">✅</div>
+          </div>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-50 to-red-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Stok Rendah</p>
+              <p className="text-3xl font-bold text-red-700">
+                {barangList.filter(b => b.stok < 10 && b.stok > 0).length}
+              </p>
+            </div>
+            <div className="text-5xl">⚠️</div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Table */}
       <Card
         title="📦 Data Barang"
         headerAction={
@@ -203,12 +254,24 @@ export default function Barang() {
         {loading ? (
           <Loading />
         ) : (
-          <Table
-            columns={columns}
-            data={barangList}
-            loading={loading}
-            emptyMessage="Belum ada data barang"
-          />
+          <>
+            {barangList.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📭</div>
+                <p className="text-gray-500 text-lg">Belum ada data barang</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  Klik tombol "Tambah Barang" untuk mulai menambahkan data
+                </p>
+              </div>
+            ) : (
+              <Table
+                columns={columns}
+                data={barangList}
+                loading={loading}
+                emptyMessage="Belum ada data barang"
+              />
+            )}
+          </>
         )}
       </Card>
 
@@ -231,10 +294,13 @@ export default function Barang() {
         />
       )}
       
-      {/* ✅ Confirm Modal Hapus (BARU) */}
+      {/* Confirm Modal Hapus */}
       <ConfirmModal
         isOpen={confirmDeleteModal.isOpen}
-        onClose={() => setConfirmDeleteModal({ ...confirmDeleteModal, isOpen: false })}
+        onClose={() => setConfirmDeleteModal({ 
+          ...confirmDeleteModal, 
+          isOpen: false 
+        })}
         onConfirm={handleConfirmDelete}
         title={confirmDeleteModal.title}
         message={confirmDeleteModal.message}

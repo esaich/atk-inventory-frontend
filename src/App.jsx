@@ -17,6 +17,7 @@ import BarangMasukPage from "./pages/Admin/BarangMasuk/BarangMasuk";
 import PaymentPage from "./pages/Admin/Payment/Payment";
 import PermintaanPage from "./pages/Admin/Permintaan/Permintaan";
 import UserDivisiPage from "./pages/Admin/UserDivisi/UserDivisi";
+import BarangKeluarPage from "./pages/Admin/BarangKeluar/BarangKeluar";
 
 // Divisi Pages
 import DivisiDashboard from "./pages/Divisi/Dashboard";
@@ -86,14 +87,16 @@ export default function App() {
           </ProtectedRoute>
         }
       >
+
         <Route index element={<AdminDashboard user={user} />} />
         <Route path="barang" element={<Barang user={user} />} />
         <Route path="supplier" element={<Supplier user={user} />} />
-        <Route path="barangmasuk" element={<BarangMasukPage />} />
+        <Route path="barang-masuk" element={<BarangMasukPage />} />
         <Route path="permintaan" element={<PermintaanPage />} />
         <Route path="pengadaan" element={<PengadaanPage />} />
         <Route path="payment" element={<PaymentPage/>} />
-        <Route path="userdivisi" element={<UserDivisiPage />} />
+        <Route path="user-divisi" element={<UserDivisiPage />} />
+        <Route path="barang-keluar" element={<BarangKeluarPage />} />
       </Route>
 
       {/* Divisi Routes */}

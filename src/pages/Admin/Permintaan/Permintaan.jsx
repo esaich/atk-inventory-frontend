@@ -16,7 +16,7 @@ export default function Permintaan() {
   const [permintaanList, setPermintaanList] = useState([]);
   const [barangList, setBarangList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+  const [filter, setFilter] = useState('all');
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedPermintaan, setSelectedPermintaan] = useState(null);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
@@ -39,7 +39,6 @@ export default function Permintaan() {
         barangAPI.getAll()
       ]);
 
-      // Process Permintaan
       let permintaanData = [];
       if (Array.isArray(permintaanResponse)) {
         permintaanData = permintaanResponse;
@@ -49,7 +48,6 @@ export default function Permintaan() {
         permintaanData = permintaanResponse.$values;
       }
 
-      // Process Barang
       let barangData = [];
       if (Array.isArray(barangResponse)) {
         barangData = barangResponse;
@@ -59,23 +57,22 @@ export default function Permintaan() {
         barangData = barangResponse.$values;
       }
 
-      // Sort by date (newest first) and status (pending first)
       permintaanData.sort((a, b) => {
-        // Pending di atas
         if (a.status === 0 && b.status !== 0) return -1;
         if (a.status !== 0 && b.status === 0) return 1;
-        
-        // Sort by date
+
         const dateA = new Date(a.tanggalPermintaan || a.createdAt);
         const dateB = new Date(b.tanggalPermintaan || b.createdAt);
         return dateB - dateA;
       });
-
+      // Inject nama user & divisi dari ASP.NET nested object
+      permintaanData = permintaanData.map(p => ({
+        ...p,
+        namaUser: p.user?.nama || '-',
+        namaDivisi: p.user?.namaDivisi || '-'
+      }));
       setBarangList(barangData);
       setPermintaanList(permintaanData);
-
-      console.log('Permintaan Data:', permintaanData);
-      console.log('Barang Data:', barangData);
     } catch (error) {
       console.error('Error fetching data:', error);
       showAlert('error', 'Gagal memuat data permintaan');
@@ -111,7 +108,6 @@ export default function Permintaan() {
     }
   };
 
-  // Get barang info
   const getBarangInfo = (barangId) => {
     const barang = barangList.find(b => b.id === barangId);
     if (barang) {
@@ -125,7 +121,6 @@ export default function Permintaan() {
     return { nama: '-', kode: '-', satuan: '-', stok: 0 };
   };
 
-  // Format date
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -138,21 +133,15 @@ export default function Permintaan() {
     });
   };
 
-  // Get status badge
   const getStatusBadge = (status) => {
     switch(status) {
-      case 0:
-        return <Badge text="Pending" variant="warning" />;
-      case 1:
-        return <Badge text="Disetujui" variant="success" />;
-      case 2:
-        return <Badge text="Ditolak" variant="danger" />;
-      default:
-        return <Badge text="Unknown" variant="secondary" />;
+      case 0: return <Badge text="Pending" variant="warning" />;
+      case 1: return <Badge text="Disetujui" variant="success" />;
+      case 2: return <Badge text="Ditolak" variant="danger" />;
+      default: return <Badge text="Unknown" variant="secondary" />;
     }
   };
 
-  // Filter data
   const getFilteredData = () => {
     if (filter === 'all') return permintaanList;
     if (filter === 'pending') return permintaanList.filter(p => p.status === 0);
@@ -163,7 +152,6 @@ export default function Permintaan() {
 
   const filteredData = getFilteredData();
 
-  // Calculate stats
   const stats = {
     total: permintaanList.length,
     pending: permintaanList.filter(p => p.status === 0).length,
@@ -173,9 +161,11 @@ export default function Permintaan() {
 
   const columns = [
     { 
-      header: 'ID', 
-      field: 'id', 
-      width: '60px' 
+      header: 'ID',  
+      width: '60px',
+      render: (row, index) => (
+         <span className="font-semibold">{index + 1}. </span>
+      )
     },
     { 
       header: 'Barang',
@@ -261,7 +251,6 @@ export default function Permintaan() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6 shadow-lg">
         <h1 className="text-3xl font-bold mb-2">📋 Kelola Permintaan Barang</h1>
         <p className="text-purple-100">
@@ -269,13 +258,12 @@ export default function Permintaan() {
         </p>
       </div>
 
-      {/* Alert */}
       {alert.show && (
         <Alert type={alert.type} message={alert.message} />
       )}
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
         <Card 
           className={`cursor-pointer transition hover:shadow-lg ${filter === 'all' ? 'ring-2 ring-blue-500' : ''}`}
           onClick={() => setFilter('all')}
@@ -327,9 +315,9 @@ export default function Permintaan() {
             <div className="text-4xl">❌</div>
           </div>
         </Card>
+
       </div>
 
-      {/* Table */}
       <Card title="📝 Daftar Permintaan">
         {loading ? (
           <Loading />
@@ -347,7 +335,6 @@ export default function Permintaan() {
         )}
       </Card>
 
-      {/* Modal Detail */}
       {selectedPermintaan && (
         <PermintaanDetailModal
           isOpen={isDetailModalOpen}
@@ -360,8 +347,5 @@ export default function Permintaan() {
         />
       )}
     </div>
-    
   );
-
-  
-}
+} 

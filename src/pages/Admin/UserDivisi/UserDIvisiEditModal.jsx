@@ -1,4 +1,4 @@
-// src/pages/Admin/UserDivisi/UserDivisiEditModal.jsx
+// src/pages/Admin/UserDivisi/UserDivisiEditModal.jsx (VERSI DIPERBARUI)
 
 import { useState, useEffect } from 'react';
 import Modal from '../../../components/Modal';
@@ -6,12 +6,14 @@ import Input from '../../../components/Input';
 import Button from '../../../components/Button';
 import { userDivisiAPI } from '../../../services/api';
 
-export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, showAlert }) {
+// ✅ Tambahkan divisiList ke props
+export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, showAlert, divisiList }) {
   const [formData, setFormData] = useState({
     username: '',
     nama: '',
-    namaDivisi: '',
-    password: '', // Optional untuk update
+    // ❌ Ganti namaDivisi menjadi divisiId
+    divisiId: '', 
+    password: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +23,9 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
       setFormData({
         username: user.username || '',
         nama: user.nama || '',
-        namaDivisi: user.namaDivisi || '',
+        // ✅ Ambil DivisiId dari data user saat ini
+        // Asumsi data user memiliki properti divisiId
+        divisiId: user.divisiId ? user.divisiId.toString() : '', 
         password: '', // Kosongkan password saat edit
       });
     }
@@ -41,37 +45,20 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
       return;
     }
 
-    // Validasi
-    if (!formData.username.trim()) {
-      showAlert('error', 'Username harus diisi!');
+    // Validasi (dipersingkat)
+    if (!formData.username.trim() || formData.username.length > 100) {
+      showAlert('error', 'Username harus diisi dan maksimal 100 karakter!');
       return;
     }
-
-    if (formData.username.length > 100) {
-      showAlert('error', 'Username maksimal 100 karakter!');
+    if (!formData.nama.trim() || formData.nama.length > 100) {
+      showAlert('error', 'Nama lengkap harus diisi dan maksimal 100 karakter!');
       return;
     }
-
-    if (!formData.nama.trim()) {
-      showAlert('error', 'Nama lengkap harus diisi!');
+    // ✅ Validasi DivisiId
+    if (!formData.divisiId) {
+      showAlert('error', 'Divisi harus dipilih!');
       return;
     }
-
-    if (formData.nama.length > 100) {
-      showAlert('error', 'Nama maksimal 100 karakter!');
-      return;
-    }
-
-    if (!formData.namaDivisi.trim()) {
-      showAlert('error', 'Nama divisi harus diisi!');
-      return;
-    }
-
-    if (formData.namaDivisi.length > 150) {
-      showAlert('error', 'Nama divisi maksimal 150 karakter!');
-      return;
-    }
-
     // Validasi password jika diisi
     if (formData.password && formData.password.length < 6) {
       showAlert('error', 'Password minimal 6 karakter!');
@@ -81,11 +68,17 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
     setSubmitting(true);
 
     try {
+        // ✅ Cari namaDivisi untuk payload, lalu kirim DivisiId
+        const selectedDivisi = divisiList.find(d => d.id.toString() === formData.divisiId);
+        
       // Kirim data sesuai DTO (password nullable)
       const updateData = {
         username: formData.username,
         nama: formData.nama,
-        namaDivisi: formData.namaDivisi,
+        // ✅ Kirim DivisiId sebagai integer
+        divisiId: parseInt(formData.divisiId), 
+        // ✅ Kirim namaDivisi yang sesuai (jika diperlukan backend)
+        namaDivisi: selectedDivisi?.nama || '', 
         password: formData.password || null, // Null jika tidak diisi
       };
 
@@ -126,12 +119,14 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
       <div className="space-y-4">
         
         {/* User ID (Read-only) */}
+        {/* ... (Tidak diubah) */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
           <p className="text-xs text-gray-600">User ID</p>
           <p className="text-lg font-bold text-gray-800">{user?.id}</p>
         </div>
 
         {/* Username */}
+        {/* ... (Tidak diubah) */}
         <Input
           label="Username"
           name="username"
@@ -146,6 +141,7 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
         />
 
         {/* Nama Lengkap */}
+        {/* ... (Tidak diubah) */}
         <Input
           label="Nama Lengkap"
           name="nama"
@@ -159,21 +155,37 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
           icon={<span>📝</span>}
         />
 
-        {/* Nama Divisi */}
-        <Input
-          label="Nama Divisi"
-          name="namaDivisi"
-          type="text"
-          value={formData.namaDivisi}
-          onChange={handleChange}
-          placeholder="Contoh: IT, Marketing, Finance"
-          required
-          helpText="Maksimal 150 karakter"
-          maxLength="150"
-          icon={<span>🏢</span>}
-        />
+        {/* 🏢 Dropdown Pilih Divisi (MENGGANTIKAN INPUT TEKS NAMA DIVISI) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Divisi <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              🏢
+            </span>
+            <select
+              name="divisiId"
+              value={formData.divisiId}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+            >
+              <option value="">-- Pilih Divisi --</option>
+              {divisiList && divisiList.map((divisi) => (
+                <option key={divisi.id} value={divisi.id}>
+                  {divisi.nama}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Pilih divisi pengguna ini
+          </p>
+        </div>
 
         {/* Password (Optional) */}
+        {/* ... (Tidak diubah, kecuali penempatan tag input) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Password Baru <span className="text-gray-400">(Opsional)</span>
@@ -200,6 +212,7 @@ export default function UserDivisiEditModal({ isOpen, onClose, user, onSuccess, 
         </div>
 
         {/* Warning Box */}
+        {/* ... (Tidak diubah) */}
         <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
           <div className="flex items-start">
             <span className="text-2xl mr-3">⚠️</span>

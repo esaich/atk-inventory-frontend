@@ -1,4 +1,4 @@
-// src/pages/Admin/UserDivisi/UserDivisiCreateModal.jsx
+// src/pages/Admin/UserDivisi/UserDivisiCreateModal.jsx (VERSI DIPERBARUI)
 
 import { useState } from 'react';
 import Modal from '../../../components/Modal';
@@ -6,12 +6,14 @@ import Input from '../../../components/Input';
 import Button from '../../../components/Button';
 import { userDivisiAPI } from '../../../services/api';
 
-export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, showAlert }) {
+// ✅ Tambahkan divisiList ke props
+export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, showAlert, divisiList }) {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     nama: '',
-    namaDivisi: '',
+    
+    divisiId: '', 
   });
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +28,8 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
       username: '',
       password: '',
       nama: '',
-      namaDivisi: '',
+      
+      divisiId: '', 
     });
     setShowPassword(false);
   };
@@ -34,12 +37,11 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    // Validasi
+    // Validasi (sebagian dipersingkat)
     if (!formData.username.trim()) {
       showAlert('error', 'Username harus diisi!');
       return;
     }
-
     if (formData.username.length > 100) {
       showAlert('error', 'Username maksimal 100 karakter!');
       return;
@@ -49,14 +51,8 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
       showAlert('error', 'Password harus diisi!');
       return;
     }
-
-    if (formData.password.length < 6) {
-      showAlert('error', 'Password minimal 6 karakter!');
-      return;
-    }
-
-    if (formData.password.length > 255) {
-      showAlert('error', 'Password maksimal 255 karakter!');
+    if (formData.password.length < 6 || formData.password.length > 255) {
+      showAlert('error', 'Password minimal 6 dan maksimal 255 karakter!');
       return;
     }
 
@@ -64,26 +60,32 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
       showAlert('error', 'Nama lengkap harus diisi!');
       return;
     }
-
     if (formData.nama.length > 100) {
       showAlert('error', 'Nama maksimal 100 karakter!');
       return;
     }
-
-    if (!formData.namaDivisi.trim()) {
-      showAlert('error', 'Nama divisi harus diisi!');
-      return;
-    }
-
-    if (formData.namaDivisi.length > 150) {
-      showAlert('error', 'Nama divisi maksimal 150 karakter!');
+    
+    // ✅ Validasi DivisiId
+    if (!formData.divisiId) {
+      showAlert('error', 'Divisi harus dipilih!');
       return;
     }
 
     setSubmitting(true);
 
     try {
-      await userDivisiAPI.create(formData);
+        // ✅ Buat payload dengan DivisiId
+        const payload = {
+            username: formData.username,
+            password: formData.password,
+            nama: formData.nama,
+            // DivisiId perlu diubah menjadi integer jika backend memerlukannya
+            divisiId: parseInt(formData.divisiId), 
+            // Jika backend masih membutuhkan namaDivisi, cari dari list:
+            namaDivisi: divisiList.find(d => d.id === parseInt(formData.divisiId))?.nama, 
+        };
+
+      await userDivisiAPI.create(payload);
       onSuccess('User divisi berhasil ditambahkan!');
       resetForm();
       onClose();
@@ -126,6 +128,7 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
       <div className="space-y-4">
         
         {/* Username */}
+        {/* ... (Tidak diubah) */}
         <Input
           label="Username"
           name="username"
@@ -140,6 +143,7 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
         />
 
         {/* Password */}
+        {/* ... (Tidak diubah) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Password <span className="text-red-500">*</span>
@@ -174,6 +178,7 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
         </div>
 
         {/* Nama Lengkap */}
+        {/* ... (Tidak diubah) */}
         <Input
           label="Nama Lengkap"
           name="nama"
@@ -187,19 +192,34 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
           icon={<span>📝</span>}
         />
 
-        {/* Nama Divisi */}
-        <Input
-          label="Nama Divisi"
-          name="namaDivisi"
-          type="text"
-          value={formData.namaDivisi}
-          onChange={handleChange}
-          placeholder="Contoh: IT, Marketing, Finance"
-          required
-          helpText="Maksimal 150 karakter"
-          maxLength="150"
-          icon={<span>🏢</span>}
-        />
+        {/* 🏢 Dropdown Pilih Divisi (MENGGANTIKAN INPUT TEKS NAMA DIVISI) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Divisi <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              🏢
+            </span>
+            <select
+              name="divisiId"
+              value={formData.divisiId}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+            >
+              <option value="">-- Pilih Divisi --</option>
+              {divisiList && divisiList.map((divisi) => (
+                <option key={divisi.id} value={divisi.id}>
+                  {divisi.nama}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Pilih divisi pengguna ini
+          </p>
+        </div>
 
         {/* Info Box */}
         <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
@@ -210,7 +230,7 @@ export default function UserDivisiCreateModal({ isOpen, onClose, onSuccess, show
               <ul className="text-xs text-blue-700 mt-1 list-disc list-inside space-y-1">
                 <li>Username akan digunakan untuk login</li>
                 <li>Password minimal 6 karakter</li>
-                <li>Nama divisi akan digunakan untuk grouping user</li>
+                <li>**Divisi dipilih dari daftar yang tersedia.**</li>
               </ul>
             </div>
           </div>

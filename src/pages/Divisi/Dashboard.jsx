@@ -96,7 +96,7 @@ export default function DivisiDashboard({ user }) {
       <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-xl p-6 shadow-lg">
         <h1 className="text-3xl font-bold mb-2">Dashboard Divisi</h1>
         <p className="text-green-100">
-          Selamat datang, {user?.nama}! ({user?.namaDivisi})
+          Selamat datang, {user?.nama}! {user?.namaDivisi}
         </p>
       </div>
 

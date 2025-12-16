@@ -54,8 +54,7 @@ export default function Supplier() {
       } else {
         setSuppliers([]);
       }
-    } catch (error) {
-      // ❌ HILANGKAN console.error
+    } catch {
       showAlert('error', 'Gagal memuat data supplier');
       setSuppliers([]);
     } finally {
@@ -123,7 +122,9 @@ export default function Supplier() {
   };
 
   const columns = [
-    { header: 'ID', field: 'id', width: '80px' },
+    { header: 'No.', width: '80px', render: (row, index) =>(
+      <span className="font-semibold">{index + 1}. </span>
+    ) },
     { header: 'Nama Supplier', field: 'namaSupplier' },
     { header: 'Alamat', field: 'alamat' },
     { header: 'Telepon', field: 'telepon' },

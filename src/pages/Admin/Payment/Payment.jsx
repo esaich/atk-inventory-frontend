@@ -73,9 +73,9 @@ export default function Payment() {
       setSupplierList(supplierData);
       setPaymentList(paymentData);
 
-      // ❌ HILANGKAN console.log
-    } catch (err) {
-      // ❌ HILANGKAN console.error
+    
+    } catch  {
+      
       showAlert('error', 'Gagal memuat data');
       setPaymentList([]);
     } finally {
@@ -194,7 +194,9 @@ export default function Payment() {
   };
 
   const columns = [
-    { header: 'ID', field: 'id', width: '60px' },
+    { header: 'ID', width: '60px', render:(row, index) => (
+      <span className="font-semibold">{index + 1} .</span>
+    ) },
     { 
       header: 'Supplier',
       render: (row) => (
